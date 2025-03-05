@@ -16,3 +16,4 @@ venv/
 # Ignore VS Code and macOS files
 .vscode/
 .DS_Store
+.env
