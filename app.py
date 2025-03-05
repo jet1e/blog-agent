@@ -23,7 +23,7 @@ def ask():
 
     example_blogs = read_files()
 
-    prompt = "Create a blog in markdown form on this set of information " + user_message + ". Based on the following examples (Ensure to maintain the exact structure, structuring in markdown and ensure to use quotes from the infromation that I just gave.) Here are the example blogs: " + example_blogs
+    prompt = "Create a blog in markdown form on this set of information " + user_message + ". Based on the following examples (ENSURE to maintain the exact structure, format, structuring in markdown and ensure to use quotes from the infromation that I just gave.) Here are the example blogs: " + example_blogs + " Do not add chatgpt commentary/auxilary notes."
 
 
     # Open AI response
