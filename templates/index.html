@@ -2,7 +2,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Flask Chatbot</title>
+        <title>Flask Blog Agent</title>
 
         <style>
             body {
@@ -44,7 +44,7 @@
         </style>
     </head>
     <body>
-        <h1>Hello world!</h1>
+        <h1>Flask Blog Agent</h1>
         <div id="chat-container">
 
             {% if openai_response %}
@@ -54,6 +54,8 @@
             <form method="POST" action="/ask">
                 <input type="text" name="user_input" id="userInput" placeholder="Type your message here..." />
                 <button type="submit">Ask</button>
+
+                <button type="button">Download</button>
             </form>
         </div>
     </body>
