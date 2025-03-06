@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Response
 from openai import OpenAI
 import os
+import re
 from dotenv import load_dotenv
 
 # Retrieve the open AI key from .env
@@ -11,6 +12,8 @@ openai = OpenAI(
 )
 
 app = Flask(__name__)
+
+openai_response = ""
 
 @app.route('/')
 def home():
@@ -23,7 +26,7 @@ def ask():
 
     example_blogs = read_files()
 
-    prompt = "Create a blog in markdown form on this set of information " + user_message + ". The blog you write must adhere STRICTLY to how the following example blogs are written" + example_blogs + " Do not add chatgpt commentary/auxilary notes. Ensure you follow the structures correctly. Additionally include Front Matter: Include a title, date, author, and a brief description of the content. Also, include any relevant keywords in an array. Introduction: Provide a concise introduction to the topic. Explain the main subject matter and what the blog will cover.Main Content: Divide the content into sections with descriptive headings. Each section should be focused on a specific aspect of the topic. Use numbered or bulleted lists to break down complex ideas, steps, or information. Examples and Visuals: If applicable, provide examples, screenshots, or images using markdown syntax. Embed the images properly. Conclusion: End with a brief conclusion, summarizing the main points or offering advice or recommendations. Call to Action (optional): If appropriate, end with a call to action, encouraging readers to share their thoughts, comments, or take the next steps. Ensure the tone is informative, clear, and professional, while being easy to follow. Write in short paragraphs, and break up large sections of text to enhance readability. Follow a structured and consistent markdown format for headings, lists, images, and other formatting. Add placeholder images, videos links with subtitles YOU MUST DO THIS. USE QUOTES."
+    prompt = "Create a blog in markdown form on this set of information " + user_message + ". The blog you write must adhere STRICTLY to how the following example blogs are written" + example_blogs + " Do not add chatgpt commentary/auxilary notes. Ensure you follow the structures correctly. Additionally include Front Matter: Include a title, date, author, and a brief description of the content. Also, include any relevant keywords in an array. Introduction: Provide a concise introduction to the topic. Explain the main subject matter and what the blog will cover.Main Content: Divide the content into sections with descriptive headings. Each section should be focused on a specific aspect of the topic. Use numbered or bulleted lists to break down complex ideas, steps, or information. Examples and Visuals: If applicable, provide examples, screenshots, or images using markdown syntax. Embed the images properly. Conclusion: End with a brief conclusion, summarizing the main points or offering advice or recommendations. Call to Action (optional): If appropriate, end with a call to action, encouraging readers to share their thoughts, comments, or take the next steps. Ensure the tone is informative, clear, and professional, while being easy to follow. Write in short paragraphs, and break up large sections of text to enhance readability. Follow a structured and consistent markdown format for headings, lists, images, and other formatting. Add placeholder images, videos links with subtitles YOU MUST DO THIS. USE QUOTES. Do not include this at the start \"```markdown\" I DO NOT WANT THIS. ENSURE that the metadata/keys follow the exact format for example the quotations must be the same as a string.EXACTLY FOLLOW THE STRUCTURE FOR IMAGES AND CAPTIONS. it must need a caption."
 
 
     # Open AI response
@@ -38,7 +41,23 @@ def ask():
     print(response)
     openai_response = response.choices[0].message.content   # Get the response
 
-    return render_template('index.html', user_message=user_message, openai_response=openai_response)  # Pass it to the frontend
+    # Save the OpenAI response to a markdown file
+    save_to_markdown(openai_response)
+
+    return render_template('index.html', user_message=user_message, openai_response=openai_response)  # Pass it to the fronten
+
+@app.route("/download")
+def download():
+    # Path to the generated markdown file
+    markdown_file = "generated_blog.md"
+
+    # Return the markdown file as a downloadable file
+    return Response(
+        open(markdown_file, 'r').read(),
+        mimetype='text/markdown',
+        headers={"Content-Disposition": "attachment;filename=generated_blog.md"}
+    )
+
 
 def read_files():
     # Get the list of uploaded files
@@ -47,7 +66,7 @@ def read_files():
     file_contents = ""
     for file in files:
         if file and allowed_file(file.filename):
-            print(f"Filename: {file.filename}") # Print the file name
+            print(f"Filename: {file.filename}")  # Print the file name
             content = file.read().decode("utf-8")  # Read file content
             file_contents += content + "\n\n"  # Append content from each file
     return file_contents
@@ -56,6 +75,11 @@ def read_files():
 def allowed_file(filename):
     # Check if the uploaded file is a markdown file
     return '.' in filename and filename.rsplit('.', 1)[1].lower() == 'md'
+
+def save_to_markdown(content):
+    # Save the OpenAI response to a markdown file
+    with open("generated_blog.md", "w") as file:
+        file.write(content)
 
 if __name__ == '__main__':
     app.run(debug=True)
